@@ -1184,6 +1184,19 @@ PedigreeImport.initFromGEDCOM = function(inputText, markEvaluated, saveIDAsExter
    return newG;
 }
 
+/* ===============================================================================================
+ *
+ * Creates and returns a BaseGraph from a text string in the "FHIR JSON" format.
+ *
+ * We will support 2 different styles of fhir resource, a composition in the format used to export the
+ * pedigree and a List of FamilyMemberHistory resources.
+ *
+ *
+ * ===============================================================================================
+ */
+PedigreeImport.initFromFHIR = function(inputText) {
+    return FHIRConverter.initFromFHIR(inputText);
+}
 
 // ===============================================================================================
 

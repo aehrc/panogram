@@ -54,6 +54,7 @@ var ImportSelector = Class.create( {
         typeListElement.insert(_addTypeOption(false, "GEDCOM", "gedcom"));
         typeListElement.insert(_addTypeOption(false, "BOADICEA", "BOADICEA"));
         typeListElement.insert(_addTypeOption(false, "Simple JSON", "simpleJSON"));
+        typeListElement.insert(_addTypeOption(false, "FHIR JSON", "FHIRJSON"));
         //TODO: typeListElement.insert(_addTypeOption(false, "Phenotips Pedigree JSON", "phenotipsJSON"));
 
         var promptType = new Element('div', {'class': 'import-section'}).update("Data format:");
@@ -147,7 +148,7 @@ var ImportSelector = Class.create( {
         }
         
         var saveExternalID = $$('input[type=checkbox][name="mark-external"]')[0];
-        if (importType == "simpleJSON") {
+        if (importType == "simpleJSON" || importType == "FHIRJSON") {
             saveExternalID.disabled = true;
         } else {
             saveExternalID.disabled = false;

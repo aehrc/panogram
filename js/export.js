@@ -51,7 +51,7 @@ PedigreeExport.exportAsSimpleJSON = function(pedigree, privacySetting)
            if (properties.hasOwnProperty(property)) {
                if (privacySetting != "all") {
                    if (property == 'lName' || property == 'fName' || property == 'lNameAtB' ||
-                       property == 'dob' || property == 'bob') continue;
+                       property == 'dob' || property == 'dod') continue;
                    if (privacySetting == "minimal" && property == "comments") continue
                }
                var converted = PedigreeExport.convertProperty(property, properties[property]);
@@ -66,6 +66,17 @@ PedigreeExport.exportAsSimpleJSON = function(pedigree, privacySetting)
 
    return JSON.stringify(exportObj);
 }
+
+/* ===============================================================================================
+ * 
+ * Creates and returns a JSON in the "FHIR JSON" format 
+ * 
+ * ===============================================================================================
+ */
+PedigreeExport.exportAsFHIR = function(pedigree, privacySetting){
+    return FHIRConverter.exportAsFHIR(pedigree, privacySetting);
+};
+
 
 //===============================================================================================
 

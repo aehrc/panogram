@@ -1,45 +1,28 @@
-## Panogram v0.1.2 Readme
-HealthHack Sydney, October 2014
+## Panogram Readme
 
-Panogram is offline standalon multiplatform Pedigree drawing tool based on [Phenotips](https://github.com/phenotips/phenotips) platform.
+This is a fork of the Panogram pedigree editor developed by Christopher Michaelides and Andrej Griniuk and licensed under LGPL v2.1.
 
-![Screenshot](https://github.com/panogram/panogram/raw/master/resources/screenshot.jpg)
+The original repository can be found here : [https://github.com/panogram/panogram](https://github.com/panogram/panogram)
 
-## Features
+A much more advanced version of this editor is available at phenotips but the license was changed to AGPL.
 
-- Simple and intuitive graphical interface for pedigree drawing
-- Follows conventions
-- Multiplatform (Windows, Mac OS, Linux)
-- Offline and standalone
-- Supported file formats: PED, LINKAGE, GEDCOM, BOADICEA, JSON
+[https://github.com/phenotips/phenotips/](https://github.com/phenotips/phenotips/)
 
-## System Requirements
+The original purpose of the fork was to provide a redcap external module to edit pedigree diagrams.
 
-Windows, MacOS or Linux for desktop app modern browser for Web app.
+To do this it was adapted to send the diagram information either via a shared browser local storage or a posted message.
 
-## Downloads
+There are still a large number of issues with the editor.
 
- - [Windows app (64bit)](https://github.com/panogram/panogram/releases/download/0.1.2/panogram-0_1_2-windows-amd64.zip)
- - [Mac OS app](https://github.com/panogram/panogram/releases/download/0.1.2/panogram-0_1_2-macos.zip)
- - [Linux app (64bit)](https://github.com/panogram/panogram/releases/download/0.1.2/panogram-0_1_2-linux-amd64.tar.gz)
+  - The editor is built on top of XWiki which expects access to the XWiki back-end, which will likely not be available, so the editor will do rest calls which fail.
+  - The editor has suggestion boxes for a number of fields which use non-existance web services. This means the hpo and gene lookups fail.
+ 
 
-## Installation
 
-1. Download a ZIP archive for your operating systen
-2. Unarchive
-3. Launch `panogram.exe` for Windows, `panogram.app` for Mac OS, `panogram` for Linux.
+## Try it out
 
-OR
+[https://aehrc.github.io/panogram/test_opener.html](https://aehrc.github.io/panogram/test_opener.html)
 
-[Web App](http://panogram.github.io/panogram)
-
-## Video presentation
-
-You can watch the video presentation [here](http://youtu.be/SOY9mx1irnY)
-
-## Solution authors
-
-Christopher Michaelides and Andrej Griniuk
 
 ## License
 

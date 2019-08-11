@@ -103,6 +103,7 @@
     <script type="text/javascript" src="js/versionUpdater.js" defer="defer"></script>
     <script type="text/javascript" src="js/saveLoadEngine.js" defer="defer"></script>
     <script type="text/javascript" src="js/localStorageSaveLoadEngine.js" defer="defer"></script>
+    <script type="text/javascript" src="js/messageStorageSaveLoadEngine.js" defer="defer"></script>
     <script type="text/javascript" src="js/controller.js" defer="defer"></script>
     <script type="text/javascript" src="js/view.js" defer="defer"></script>
     <script type="text/javascript" src="js/undoRedo.js" defer="defer"></script>
@@ -148,11 +149,13 @@
 
         document.observe("xwiki:dom:loaded",function() {
             var editorOptions = {
-                    saveLoadEngine: new LocalStorageSaveLoadEngine("TEST_LOCAL_STORAGE_DATA", "FHIRJSON", true),
-		    probandData: new LocalStorageProbandDataLoader("TEST_LOCAL_STORAGE_PROBAND"),
+                    saveLoadEngine: new MessageStorageSaveLoadEngine("TEST_LOCAL_STORAGE_DATA", "FHIRJSON", true),
+		            probandData: new MessageStorageProbandDataLoader("TEST_LOCAL_STORAGE_PROBAND"),
             };
             console.log("creating editor");
             editor = new PedigreeEditor(editorOptions);
+            var messageStorageController = new MessageStorageController();
+            messageStorageController.start();
         });
 
         // ]]>

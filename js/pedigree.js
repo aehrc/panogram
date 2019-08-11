@@ -7,9 +7,12 @@
  * @constructor
  */
 var PedigreeEditor = Class.create({
-    initialize: function() {
+    initialize: function(opts) {
+        var options = opts || {};
         //this.DEBUG_MODE = true;
         window.editor = this;
+
+        this._readOnly = options.hasOwnProperty('readOnly') ? options.readOnly : this.isUnsupportedBrowser();
 
         // initialize main data structure which holds the graph structure
         this._graphModel = DynamicPositionedGraph.makeEmpty(PedigreeEditor.attributes.layoutRelativePersonWidth, PedigreeEditor.attributes.layoutRelativeOtherWidth);
@@ -34,8 +37,8 @@ var PedigreeEditor = Class.create({
         this._exportSelector = new ExportSelector();
         this._saveLoadIndicator = new SaveLoadIndicator();
         this._versionUpdater = new VersionUpdater();
-        this._saveLoadEngine = new SaveLoadEngine();
-        this._probandData = new ProbandDataLoader();
+        this._saveLoadEngine = options.hasOwnProperty('saveLoadEngine') ? options.saveLoadEngine : new SaveLoadEngine();
+        this._probandData = options.hasOwnProperty('probandData') ? options.probandData : new ProbandDataLoader();
 
         // load proband data and load the graph after proband data is available
         this._probandData.load( this._saveLoadEngine.load.bind(this._saveLoadEngine) );
@@ -227,8 +230,7 @@ var PedigreeEditor = Class.create({
      *                   print and export versions).
      */
     isReadOnlyMode: function() {
-        if (this.isUnsupportedBrowser()) return true;
-        return false;
+        return this._readOnly;
     },
 
     isUnsupportedBrowser: function() {
@@ -761,6 +763,6 @@ PedigreeEditor.attributes = {
     layoutScale: { xscale: 12.0, yscale: 8 }
 };
 
-document.observe("xwiki:dom:loaded",function() {
-    editor = new PedigreeEditor();
-});
+// document.observe("xwiki:dom:loaded",function() {
+//     editor = new PedigreeEditor();
+// });

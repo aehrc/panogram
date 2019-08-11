@@ -96,14 +96,17 @@ var SaveLoadEngine = Class.create( {
             alert("Error loading the graph");
             document.fire("pedigree:graph:clear");
             document.fire("pedigree:load:finish");
-            return;
+            return false;
         }
 
         if (!noUndo) {
             var probandData = editor.getProbandDataFromPhenotips();
-            var genderOk = editor.getGraph().setProbandData( probandData.firstName, probandData.lastName, probandData.gender );
-            if (!genderOk)
-                alert("Proband gender defined in Phenotips is incompatible with this pedigree. Setting proband gender to 'Unknown'");
+            if (probandData){
+                var genderOk = editor.getGraph().setProbandData( probandData.firstName, probandData.lastName, probandData.gender );
+                if (!genderOk){
+                       alert("Proband gender defined in Phenotips is incompatible with this pedigree. Setting proband gender to 'Unknown'");
+                }
+            }
             JSONString = editor.getGraph().toJSON();
         }
 
@@ -118,6 +121,7 @@ var SaveLoadEngine = Class.create( {
             editor.getActionStack().addState(null, null, JSONString);
 
         document.fire("pedigree:load:finish");
+        return true;
     },
 
     createGraphFromImportData: function(importString, importType, importOptions, noUndo, centerAround0) {
@@ -132,14 +136,17 @@ var SaveLoadEngine = Class.create( {
         {
             alert("Error importing pedigree: " + err);
             document.fire("pedigree:load:finish");
-            return;
+            return false;
         }
 
         if (!noUndo) {
             var probandData = editor.getProbandDataFromPhenotips();
-            var genderOk = editor.getGraph().setProbandData( probandData.firstName, probandData.lastName, probandData.gender );
-            if (!genderOk)
-                alert("Proband gender defined in Phenotips is incompatible with the imported pedigree. Setting proband gender to 'Unknown'");
+            if (probandData){
+                var genderOk = editor.getGraph().setProbandData( probandData.firstName, probandData.lastName, probandData.gender );
+                if (!genderOk){
+                    alert("Proband gender defined in Phenotips is incompatible with the imported pedigree. Setting proband gender to 'Unknown'");
+                }
+            }
             JSONString = editor.getGraph().toJSON();
         }
 
@@ -154,6 +161,7 @@ var SaveLoadEngine = Class.create( {
             editor.getActionStack().addState(null, null, JSONString);
 
         document.fire("pedigree:load:finish");
+        return true;
     },
 
     save: function() {

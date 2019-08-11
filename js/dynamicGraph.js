@@ -1252,6 +1252,9 @@ DynamicPositionedGraph.prototype = {
         } else if (importType == "simpleJSON") {
             var baseGraph = PedigreeImport.initFromSimpleJSON(importString);
             if (!this._recreateUsingBaseGraph(baseGraph)) return null;  // no changes            
+        } else if (importType == "FHIRJSON") {
+            var baseGraph = PedigreeImport.initFromFHIR(importString);
+            if (!this._recreateUsingBaseGraph(baseGraph)) return null;  // no changes            
         }  else if (importType == "phenotipsJSON") {
             
             // TODO

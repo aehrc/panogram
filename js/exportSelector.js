@@ -26,6 +26,7 @@ var ExportSelector = Class.create( {
         typeListElement.insert(_addTypeOption(true,  "PED", "ped"));        
         typeListElement.insert(_addTypeOption(false, "BOADICEA", "BOADICEA"));
         typeListElement.insert(_addTypeOption(false, "Simple JSON", "simpleJSON"));
+        typeListElement.insert(_addTypeOption(false, "FHIR JSON", "FHIRJSON"));
         //TODO: typeListElement.insert(_addTypeOption(false, "Phenotips Pedigree JSON", "phenotipsJSON"));
         
         var fileDownload = new Element('a', {"id": 'downloadLink', "style": 'display:none'});
@@ -114,9 +115,13 @@ var ExportSelector = Class.create( {
         var exportType = $$('input:checked[type=radio][name="export-type"]')[0].value;
         //console.log("Import type: " + exportType);
 
-        if (exportType == "simpleJSON") { 
+        if (exportType == "simpleJSON" || exportType == "FHIRJSON") { 
             var privacySetting = $$('input:checked[type=radio][name="export-options"]')[0].value;
-            var exportString = PedigreeExport.exportAsSimpleJSON(editor.getGraph().DG, privacySetting);
+            if (exportType == "simpleJSON"){
+                var exportString = PedigreeExport.exportAsSimpleJSON(editor.getGraph().DG, privacySetting);
+            } else {
+                var exportString = PedigreeExport.exportAsFHIR(editor.getGraph().DG, privacySetting);
+            }
             var fileName = patientDocument + ".json";
             var mimeType = "application/json";
         } else {
