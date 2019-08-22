@@ -149,30 +149,33 @@
 			SmartPanogram.compositions = [];
 			SmartPanogram.compositionsByReference = {};
 			$('#pedigree_list').empty();
-			for (var i = 0; i < bundle.entry.length; i++) {
-				var resource = bundle.entry[i].resource;
-				var reference = 'Composition/' + resource.id;
+			if (bundle.entry){
+				
+				for (var i = 0; i < bundle.entry.length; i++) {
+					var resource = bundle.entry[i].resource;
+					var reference = 'Composition/' + resource.id;
 
-				SmartPanogram.compositions.push(resource);
-				SmartPanogram.compositionsByReference[reference] = resource;
+					SmartPanogram.compositions.push(resource);
+					SmartPanogram.compositionsByReference[reference] = resource;
 
-				var dateCreated = resource.date;
-				var disorders = [];
-				var fmCount = 0;
-				for (var j = 0; j < resource.contained.length; j++) {
-					if (resource.contained[j].resourceType == 'FamilyMemberHistory') {
-						fmCount++;
-					} else if (resource.contained[j].resourceType == 'Condition') {
-						if (resource.contained[j].code) {
-							disorders.push(resource.contained[j].code.text);
+					var dateCreated = resource.date;
+					var disorders = [];
+					var fmCount = 0;
+					for (var j = 0; j < resource.contained.length; j++) {
+						if (resource.contained[j].resourceType == 'FamilyMemberHistory') {
+							fmCount++;
+						} else if (resource.contained[j].resourceType == 'Condition') {
+							if (resource.contained[j].code) {
+								disorders.push(resource.contained[j].code.text);
+							}
+
 						}
-
 					}
+					$('#pedigree_list').append(
+							'<tr onclick="editClicked(\'' + reference + '\')"><td>'
+									+ dateCreated + '</td><td>' + disorders.join()
+									+ '</td><td>' + fmCount + '</td></tr>');
 				}
-				$('#pedigree_list').append(
-						'<tr onclick="editClicked(\'' + reference + '\')"><td>'
-								+ dateCreated + '</td><td>' + disorders.join()
-								+ '</td><td>' + fmCount + '</td></tr>');
 			}
 		};
 
