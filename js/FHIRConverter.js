@@ -25,7 +25,7 @@ FHIRConverter.initFromFHIR = function(inputText) {
 			var exArr = inputResource.extension;
 			for (var i = 0; i < exArr.length; i++) {
 				if (exArr[i].url === "https://github.com/aehrc/panogram/panogram-data-extension") {
-					var jsonDataString = exArr[i].valueAnnotation.data;
+					var jsonDataString = exArr[i].valueAttachment.data;
 					var jsonData = decodeURIComponent(escape(window
 							.atob(jsonDataString)));
 
@@ -490,16 +490,16 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
  * ===============================================================================================
  */
 
-FHIRConverter.exportAsFHIR = function(pedigree, privacySetting) {
+FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientReference) {
 	// var exportObj = [];
 	var today = new Date();
 	var tz = today.getTimezoneOffset();
 	var tzHours = tz / 60;
 	var tzMins = Math.abs(tz - (tzHours * 60));
-	var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-'
-			+ today.getDate();
-	var time = today.getHours() + ":" + today.getMinutes() + ":"
-			+ today.getSeconds();
+	var date = today.getFullYear() + '-' + ((today.getMonth() < 9) ? '0' : '' ) + (today.getMonth() + 1) + '-'
+			+ ((today.getDate() < 10) ? '0' : '') + today.getDate();
+	var time = ((today.getHours() < 10) ? '0' : '') + today.getHours() + ":" + ((today.getMinutes() < 10) ? '0' : '') + today.getMinutes() + ":"
+			+ ((today.getSeconds() < 10) ? '0' : '') + today.getSeconds();
 	var timezone = ((tzHours >= 0) ? '+' : '') + tzHours + ":"
 			+ ((tzMins < 10) ? '0' : '') + tzMins;
 	var dateTime = date + 'T' + time + timezone;
@@ -509,7 +509,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting) {
 
 	var pedigreeExtension = {
 		"url" : "https://github.com/aehrc/panogram/panogram-data-extension",
-		"valueAnnotation" : {
+		"valueAttachment" : {
 			"contentType" : "application/json",
 			"data" : dataAsJson
 		}
@@ -517,7 +517,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting) {
 
 	var patientReference = {
 		"type" : "Patient",
-		"reference" : "#pat"
+		"reference" : fhirPatientReference ? fhirPatientReference : "#pat"
 	};
 
 	var containedResources = [];
@@ -559,10 +559,13 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting) {
 		"contained" : containedResources
 	};
 
-	var fhirPatient = this.buildFhirPatient("pat", pedigree.GG.properties[0],
-			privacySetting);
+	
+	if (!fhirPatientReference){
+		var fhirPatient = this.buildFhirPatient("pat", pedigree.GG.properties[0],
+				privacySetting);
 
-	containedResources.push(fhirPatient);
+		containedResources.push(fhirPatient);		
+	}
 
 	if (pedigree.GG.properties[0]['disorders']) {
 		var disorders = pedigree.GG.properties[0]['disorders'];
@@ -572,9 +575,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting) {
 				"id" : "cond_" + i,
 				"subject" : patientReference,
 				"code" : {
-					"code" : {
 						"text" : disorders[i]
-					}
 				}
 			};
 			containedResources.push(fhirCondition);

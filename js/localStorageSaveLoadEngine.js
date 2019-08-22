@@ -71,7 +71,8 @@ var LocalStorageSaveLoadEngine = Class.create(SaveLoadEngine, {
 
     	var jsonData = null;
     	if (this._saveAs === "FHIRJSON"){
-    		jsonData = PedigreeExport.exportAsFHIR(editor.getGraph().DG, "all");
+    		var patientFhirRef = (this._context) ? this._context.patientFhirRef : null;
+    		jsonData = PedigreeExport.exportAsFHIR(editor.getGraph().DG, "all", patientFhirRef);
     	}
     	else if (this._saveAs === "simpleJSON"){
     		jsonData = PedigreeExport.exportAsSimpleJSON(editor.getGraph().DG, "all");;

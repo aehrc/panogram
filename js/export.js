@@ -73,8 +73,8 @@ PedigreeExport.exportAsSimpleJSON = function(pedigree, privacySetting)
  * 
  * ===============================================================================================
  */
-PedigreeExport.exportAsFHIR = function(pedigree, privacySetting){
-    return FHIRConverter.exportAsFHIR(pedigree, privacySetting);
+PedigreeExport.exportAsFHIR = function(pedigree, privacySetting, patientFhirRef){
+    return FHIRConverter.exportAsFHIR(pedigree, privacySetting, patientFhirRef);
 };
 
 
