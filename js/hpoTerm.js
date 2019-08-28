@@ -36,7 +36,7 @@ var HPOTerm = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://purl.obolibrary.org/obo/hp.owl&code=' + HPOTerm.desanitizeID(this._hpoID);
+        var queryURL = editor.getPhenotypeLookupUrl() + '&code=' + HPOTerm.desanitizeID(this._hpoID);
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
@@ -69,9 +69,6 @@ var HPOTerm = Class.create( {
     onDataFail : function(error) {
     	console.log("Failed to load hpo term " + this._hpoID + " setting name to ID");
     	this._name = HPOTerm.desanitizeID(this._hpoID);
-    },
-    getSystem : function(){
-    	return 'http://purl.obolibrary.org/obo/hp.owl';
     }
 });
 
@@ -112,10 +109,5 @@ HPOTerm.isValidID = function(id) {
     return pattern.test(id);
 }
 
-HPOTerm.getServiceURL = function() {
-	
-    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://purl.obolibrary.org/obo/hp.owl?vs&_format=json&count=20'
-//    return 'http://playground.phenotips.org' + (new XWiki.Document('SolrService', 'PhenoTips').getURL("get") + "?");
-}
 
 

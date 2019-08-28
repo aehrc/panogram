@@ -36,7 +36,7 @@ var GeneTerm = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://www.genenames.org&code=' + GeneTerm.desanitizeID(this._geneID);
+        var queryURL = editor.getGeneLookupUrl() + '&code=' + GeneTerm.desanitizeID(this._geneID);
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
@@ -69,9 +69,6 @@ var GeneTerm = Class.create( {
     onDataFail : function(error) {
     	console.log("Failed to load gene term " + this._geneID + " setting name to ID");
     	this._name = GeneTerm.desanitizeID(this._geneID);
-    },
-    getSystem : function(){
-    	return 'http://www.genenames.org';
     }
 });
 
@@ -88,26 +85,26 @@ GeneTerm.sanitizeID = function(id) {
     var temp = temp.replace(/[\(\[]/g, '_L_');
     temp = temp.replace(/[\)\]]/g, '_J_');
     temp = temp.replace(/[:]/g, '_C_');
+    temp = temp.replace(/[.]/g, '_D_');
+    temp = temp.replace(/\//g, '_S_');
     return temp.replace(/[^a-zA-Z0-9,;_\-*]/g, '__');
 }
 
 GeneTerm.desanitizeID = function(id) {
+	var temp = id;
 	var start = "HGNC:";
-	var temp = id.replace(/^D_/, start);
-    var temp = temp.replace(/__/g, " ");
+	
+	temp = temp.replace(/^D_/, start);
     temp = temp.replace(/_C_/g, ":");
     temp = temp.replace(/_L_/g, "(");
     temp = temp.replace(/_J_/g, ")");
+    temp = temp.replace(/_D_/g, ".");
+    temp = temp.replace(/_S_/g, "/");
+    temp = temp.replace(/__/g, " ");
     return temp;
 }
 
 GeneTerm.isValidID = function(id) {
     var pattern = /^HGNC:/;
     return pattern.test(id);
-}
-
-GeneTerm.getServiceURL = function() {
-	
-    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://www.genenames.org&_format=json&count=20'
-//    return 'http://playground.phenotips.org' + (new XWiki.Document('SolrService', 'PhenoTips').getURL("get") + "?");
 }

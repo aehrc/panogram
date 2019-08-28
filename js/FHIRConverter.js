@@ -570,6 +570,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 	if (pedigree.GG.properties[0]['disorders']) {
 		var disorders = pedigree.GG.properties[0]['disorders'];
 		var disorderLegend = editor.getDisorderLegend();
+		var disorderSystem = editor.getDisorderSystem();
 		
 		for (var i = 0; i < disorders.length; i++) {
 			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
@@ -593,7 +594,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 						"code" : {
 								"coding" : [
 									{
-										"system" : disorderTerm.getSystem(),
+										"system" : disorderSystem,
 										"code" : disorders[i],
 										"display" : disorderTerm.getName()
 									}
@@ -1978,6 +1979,7 @@ FHIRConverter.buildFhirFMH = function(index, pedigree, privacySetting,
 		var disorders = nodeProperties['disorders'];
 		var conditions = [];
 		var disorderLegend = editor.getDisorderLegend();
+		var disorderSystem = editor.getDisorderSystem();
 			
 		for (var i = 0; i < disorders.length; i++) {
 			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
@@ -1993,7 +1995,7 @@ FHIRConverter.buildFhirFMH = function(index, pedigree, privacySetting,
 					"code" : {
 						"coding" : [
 							{
-								"system" : disorderTerm.getSystem(),
+								"system" : disorderSystem,
 								"code" : disorders[i],
 								"display" : disorderTerm.getName()
 							}

@@ -11,7 +11,7 @@ var Disorder = Class.create( {
     initialize: function(disorderID, name, callWhenReady) {
     	 console.log("NEW DISORDER: disorder id = " + disorderID + ", name = " + name);
         // user-defined disorders
-        if (name == null && !isInt(disorderID)) {
+        if (name == null && !Disorder.isValidID(Disorder.desanitizeID(disorderID))) {
             name = Disorder.desanitizeID(disorderID);
         }
 
@@ -37,7 +37,7 @@ var Disorder = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://www.omim.org&code=' + Disorder.desanitizeID(this._disorderID);
+        var queryURL = editor.getDisorderLookupUrl() + '&code=' + Disorder.desanitizeID(this._disorderID);
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
@@ -70,10 +70,6 @@ var Disorder = Class.create( {
     onDataFail : function(error) {
     	console.log("Failed to load disorder " + this._disorderID + " setting name to ID");
     	this._name = Disorder.desanitizeID(this.__disorderID);
-    },
-    
-    getSystem : function(){
-    	return 'http://www.omim.org';
     }
     
 });
@@ -86,18 +82,27 @@ Disorder.sanitizeID = function(disorderID) {
     if (isInt(disorderID))
         return disorderID;
     var temp = disorderID;
-    var temp = temp.replace(/[\(\[]/g, '_L_');
+    temp = temp.replace(/[\(\[]/g, '_L_');
     temp = temp.replace(/[\)\]]/g, '_J_');
+    temp = temp.replace(/[:]/g, '_C_');
+    temp = temp.replace(/[.]/g, '_D_');
+    temp = temp.replace(/\//g, '_S_');
     return temp.replace(/[^a-zA-Z0-9,;_\-*]/g, '__');
 }
 
 Disorder.desanitizeID = function(disorderID) {
-    var temp = disorderID.replace(/__/g, " ");
+    var temp = disorderID;
     temp = temp.replace(/_L_/g, "(");
-    return temp.replace(/_J_/g, ")");
+    temp = temp.replace(/_C_/g, ":");
+    temp = temp.replace(/_D_/g, ".");
+    temp = temp.replace(/_S_/g, "/");
+    temp = temp.replace(/_J_/g, ")");
+    temp = temp.replace(/__/g, " ");
+    return temp;
 }
 
-Disorder.getOMIMServiceURL = function() {
-//    return 'http://playground.phenotips.org' + (new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain"));
-    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://www.omim.org&_format=json&count=20';
+Disorder.isValidID = function(id) {
+    var pattern = /^http:\/\//;
+    
+    return pattern.test(id) || isInt(id);
 }

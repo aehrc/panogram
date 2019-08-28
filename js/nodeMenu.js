@@ -108,7 +108,7 @@ NodeMenu = Class.create({
             if (!item.hasClassName('initialized')) {
                 // Create the Suggest.
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: Disorder.getOMIMServiceURL() + "&",
+                    script: editor.getDisorderExpandUrl() + "&",
                     varname: "filter",
                     noresults: "No matching terms",
                     json: true,
@@ -150,9 +150,9 @@ NodeMenu = Class.create({
             if (!item.hasClassName('initialized')) {
 //                var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
                 //console.log("Ethnicity URL: " + ethnicityServiceURL);
-            	var ethnicityServiceURL = 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/hancestro-category/$expand?_format=json&';
+            	
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: ethnicityServiceURL,
+                    script: editor.getEthnicityExpandUrl() + "&",
                     varname: "filter",
                     noresults: "No matching terms",
                     resultsParameter : "expansion.contains",
@@ -191,11 +191,11 @@ NodeMenu = Class.create({
             if (!item.hasClassName('initialized')) {
                 //var geneServiceURL = 'http://playground.phenotips.org' + (new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain"))
             	
-               	var geneServiceURL = GeneTerm.getServiceURL();
+               	
 
                 //console.log("GeneService URL: " + geneServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: geneServiceURL + "&",
+                    script: editor.getGeneExpandUrl() + "&",
                     varname: "filter",
                     noresults: "No matching terms",
                     resultsParameter : "expansion.contains",
@@ -233,10 +233,10 @@ NodeMenu = Class.create({
         // HPO terms
         this.form.select('input.suggest-hpo').each(function(item) {
             if (!item.hasClassName('initialized')) {
-                var solrServiceURL = HPOTerm.getServiceURL()
+                
                 //console.log("HPO\SOLR URL: " + solrServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: solrServiceURL + "&",
+                    script: editor.getPhenotypeExpandUrl() + "&",
                     varname: "filter",
                     noresults: "No matching terms",
                     json: true,
