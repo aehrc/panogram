@@ -9,6 +9,7 @@
 var Disorder = Class.create( {
 
     initialize: function(disorderID, name, callWhenReady) {
+    	 console.log("NEW DISORDER: disorder id = " + disorderID + ", name = " + name);
         // user-defined disorders
         if (name == null && !isInt(disorderID)) {
             name = Disorder.desanitizeID(disorderID);
@@ -36,12 +37,13 @@ var Disorder = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var baseOMIMServiceURL = Disorder.getOMIMServiceURL();
-        var queryURL           = baseOMIMServiceURL + "&q=id:" + this._disorderID;
+        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://www.omim.org&code=' + Disorder.desanitizeID(this._disorderID);
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
+            requestHeaders: {"Accept": "application/json"},
             onSuccess: this.onDataReady.bind(this),
+            onFailure: this.onDataFail.bind(this),
             //onComplete: complete.bind(this)
             onComplete: callWhenReady ? callWhenReady : {}
         });
@@ -51,12 +53,29 @@ var Disorder = Class.create( {
         try {
             var parsed = JSON.parse(response.responseText);
             //console.log(stringifyObject(parsed));
-            console.log("LOADED DISORDER: disorder id = " + this._disorderID + ", name = " + parsed.rows[0].name);
-            this._name = parsed.rows[0].name;
+            if (parsed.parameter){
+            	for (var i = 0; i < parsed.parameter.length; i++){
+            		if (parsed.parameter[i].name == 'display'){
+            			this._name = parsed.parameter[i].valueString;
+            			break;
+            		}
+            	}
+            }
+            console.log("LOADED DISORDER: disorder id = " + this._disorderID + ", name = " + this._name);
         } catch (err) {
             console.log("[LOAD DISORDER] Error: " +  err);
         }
+    },
+    
+    onDataFail : function(error) {
+    	console.log("Failed to load disorder " + this._disorderID + " setting name to ID");
+    	this._name = Disorder.desanitizeID(this.__disorderID);
+    },
+    
+    getSystem : function(){
+    	return 'http://www.omim.org';
     }
+    
 });
 
 /*
@@ -66,7 +85,8 @@ var Disorder = Class.create( {
 Disorder.sanitizeID = function(disorderID) {
     if (isInt(disorderID))
         return disorderID;
-    var temp = disorderID.replace(/[\(\[]/g, '_L_');
+    var temp = disorderID;
+    var temp = temp.replace(/[\(\[]/g, '_L_');
     temp = temp.replace(/[\)\]]/g, '_J_');
     return temp.replace(/[^a-zA-Z0-9,;_\-*]/g, '__');
 }
@@ -78,5 +98,6 @@ Disorder.desanitizeID = function(disorderID) {
 }
 
 Disorder.getOMIMServiceURL = function() {
-    return 'http://playground.phenotips.org' + (new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain"));
+//    return 'http://playground.phenotips.org' + (new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain"));
+    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://www.omim.org&_format=json&count=20';
 }

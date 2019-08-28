@@ -182,7 +182,10 @@ var MessageStorageController = Class.create( {
         var me = this;
         if (window.opener){
         	window.addEventListener('message',  function(event) {
-        		me.handleMessageEvent(event);
+        		if (me){
+        			me.handleMessageEvent(event);
+        		}
+        		
         	}, false);
         }
     },
@@ -192,7 +195,7 @@ var MessageStorageController = Class.create( {
     
     handleMessageEvent: function(event){
     	
-    	if (event.source == window.opener && event.origin == me.messageOrigin){
+    	if (event.source == window.opener && event.origin == this.messageOrigin){
     		// the message is from our opener
     		if (event.data.messageType === "panogram_control"){
     			if (event.data.panogramData){

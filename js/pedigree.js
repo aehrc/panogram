@@ -25,7 +25,7 @@ var PedigreeEditor = Class.create({
         this._nodetypeSelectionBubble = new NodetypeSelectionBubble(false);
         this._siblingSelectionBubble  = new NodetypeSelectionBubble(true);
         this._okCancelDialogue = new OkCancelDialogue();
-        this._disorderLegend = new DisorgerLegend();
+        this._disorderLegend = new DisorderLegend();
         this._geneLegend = new GeneLegend();
         this._hpoLegend = new HPOLegend();
 

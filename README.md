@@ -15,7 +15,7 @@ To do this it was adapted to send the diagram information either via a shared br
 There are still a large number of issues with the editor.
 
   - The editor is built on top of XWiki which expects access to the XWiki back-end, which will likely not be available, so the editor will do rest calls which fail.
-  - The editor has suggestion boxes for a number of fields which use non-existance web services. This means the hpo and gene lookups fail.
+  
  
 
 

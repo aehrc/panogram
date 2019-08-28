@@ -293,7 +293,7 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 			if (condition && condition.coding) {
 				var firstCoding = condition.coding[0];
 				if (firstCoding.display) {
-					disorder.push(firstCoding.display);
+					disorder.push(firstCoding.code);
 					continue;
 				}
 			}
@@ -569,15 +569,39 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 
 	if (pedigree.GG.properties[0]['disorders']) {
 		var disorders = pedigree.GG.properties[0]['disorders'];
+		var disorderLegend = editor.getDisorderLegend();
+		
 		for (var i = 0; i < disorders.length; i++) {
-			var fhirCondition = {
-				"resourceType" : "Condition",
-				"id" : "cond_" + i,
-				"subject" : patientReference,
-				"code" : {
-						"text" : disorders[i]
-				}
-			};
+			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
+			if (disorderTerm.getName() === disorders[i]){
+				// name and ID the same, must not be from omim
+				var fhirCondition = {
+						"resourceType" : "Condition",
+						"id" : "cond_" + i,
+						"subject" : patientReference,
+						"code" : {
+								"text" : disorders[i]
+						}
+					};
+			}
+			else {
+				// disorder from omim
+				var fhirCondition = {
+						"resourceType" : "Condition",
+						"id" : "cond_" + i,
+						"subject" : patientReference,
+						"code" : {
+								"coding" : [
+									{
+										"system" : disorderTerm.getSystem(),
+										"code" : disorders[i],
+										"display" : disorderTerm.getName()
+									}
+								]
+						}
+					};
+			}
+			
 			containedResources.push(fhirCondition);
 			patientEntries.push({
 				"type" : "Condition",
@@ -1953,13 +1977,30 @@ FHIRConverter.buildFhirFMH = function(index, pedigree, privacySetting,
 	if (nodeProperties['disorders']) {
 		var disorders = nodeProperties['disorders'];
 		var conditions = [];
+		var disorderLegend = editor.getDisorderLegend();
+			
 		for (var i = 0; i < disorders.length; i++) {
-			// @TODO use the code if w have one.
-			conditions.push({
-				"code" : {
-					"text" : disorders[i]
-				}
-			});
+			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
+			if (disorderTerm.getName() === disorders[i]){
+				// name and ID the same, must not be from omim
+				conditions.push({
+					"code" : {
+						"text" : disorders[i]
+					}
+				});
+			} else {
+				conditions.push({
+					"code" : {
+						"coding" : [
+							{
+								"system" : disorderTerm.getSystem(),
+								"code" : disorders[i],
+								"display" : disorderTerm.getName()
+							}
+						]
+					}
+				});
+			}			
 		}
 		fmhResource['condition'] = conditions;
 	}

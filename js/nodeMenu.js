@@ -109,21 +109,12 @@ NodeMenu = Class.create({
                 // Create the Suggest.
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
                     script: Disorder.getOMIMServiceURL() + "&",
-                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                           'name' : {'wordBoost': 20, 'phraseBoost': 40},
-                           'nameSpell' : {'wordBoost': 50, 'phraseBoost': 100, 'stubBoost': 20},
-                           'keywords' : {'wordBoost': 2, 'phraseBoost': 6, 'stubBoost': 2},
-                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
-                           'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true}
-                         }, {
-                           '-nameSort': ['\\**', '\\+*', '\\^*']
-                         }),
-                    varname: "q",
+                    varname: "filter",
                     noresults: "No matching terms",
                     json: true,
-                    resultsParameter : "rows",
-                    resultId : "id",
-                    resultValue : "name",
+                    resultsParameter : "expansion.contains",
+                    resultId : "code",
+                    resultValue : "display",
                     resultInfo : {},
                     enableHierarchy: false,
                     fadeOnClear : false,
@@ -154,17 +145,20 @@ NodeMenu = Class.create({
         });
         // ethnicities
         this.form.select('input.suggest-ethnicity').each(function(item) {
+        	//https://ontoserver.csiro.au/shrimp/?concept=Thing&system=http://purl.obolibrary.org/obo/hancestro/hancestro.owl&versionId=http://purl.obolibrary.org/obo/hancestro/releases/2018-11-23/hancestro.owl&fhir=https://genomics.ontoserver.csiro.au/fhir
+        	
             if (!item.hasClassName('initialized')) {
-                var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
+//                var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
                 //console.log("Ethnicity URL: " + ethnicityServiceURL);
+            	var ethnicityServiceURL = 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/hancestro-category/$expand?_format=json&';
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: ethnicityServiceURL + "&json=true&",
-                    varname: "input",
+                    script: ethnicityServiceURL,
+                    varname: "filter",
                     noresults: "No matching terms",
-                    resultsParameter : "rows",
+                    resultsParameter : "expansion.contains",
                     json: true,
-                    resultId : "id",
-                    resultValue : "ethnicity",
+                    resultId : "code",
+                    resultValue : "display",
                     resultInfo : {},
                     enableHierarchy: false,
                     fadeOnClear : false,
@@ -195,16 +189,19 @@ NodeMenu = Class.create({
         // genes
         this.form.select('input.suggest-genes').each(function(item) {
             if (!item.hasClassName('initialized')) {
-                var geneServiceURL = 'http://playground.phenotips.org' + (new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain"))
+                //var geneServiceURL = 'http://playground.phenotips.org' + (new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain"))
+            	
+               	var geneServiceURL = GeneTerm.getServiceURL();
+
                 //console.log("GeneService URL: " + geneServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: geneServiceURL + "&json=true&",
-                    varname: "q",
+                    script: geneServiceURL + "&",
+                    varname: "filter",
                     noresults: "No matching terms",
-                    resultsParameter : "docs",
+                    resultsParameter : "expansion.contains",
                     json: true,
-                    resultId : "symbol",
-                    resultValue : "symbol",
+                    resultId : "code",
+                    resultValue : "display",
                     resultInfo : {},
                     enableHierarchy: false,
                     tooltip : 'gene-info',
@@ -239,30 +236,13 @@ NodeMenu = Class.create({
                 var solrServiceURL = HPOTerm.getServiceURL()
                 //console.log("HPO\SOLR URL: " + solrServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: solrServiceURL + "rows=100&",
-                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                        'name' : {'wordBoost': 10, 'phraseBoost': 20},
-                        'nameSpell' : {'wordBoost': 18, 'phraseBoost': 36, 'stubBoost': 14},
-                        'nameExact' : {'phraseBoost': 100},
-                        'namePrefix' : {'phraseBoost': 30},
-                        'synonym' : {'wordBoost': 6, 'phraseBoost': 15},
-                        'synonymSpell' : {'wordBoost': 10, 'phraseBoost': 25, 'stubBoost': 7},
-                        'synonymExact' : {'phraseBoost': 70},
-                        'synonymPrefix' : {'phraseBoost': 20},
-                        'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
-                        'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true},
-                        'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
-                        'alt_id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
-                      }, {
-                        'term_category': ['HP:0000118']
-                      }
-                    ),
-                    varname: "q",
+                    script: solrServiceURL + "&",
+                    varname: "filter",
                     noresults: "No matching terms",
                     json: true,
-                    resultsParameter : "rows",
-                    resultId : "id",
-                    resultValue : "name",
+                    resultsParameter : "expansion.contains",
+                    resultId : "code",
+                    resultValue : "display",
                     resultAltName: "synonym",
                     resultCategory : "term_category",
                     resultInfo : {},
@@ -565,7 +545,7 @@ NodeMenu = Class.create({
               var container = this.up('.field-box');
               if (container) {
                 container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
-                  results.push(item.next('.value') && item.next('.value').firstChild.nodeValue || item.value);
+                  results.push(new GeneTerm(item.value, item.next('.value') && item.next('.value').firstChild.nodeValue || item.value));
                 });
               }
               return [results];
@@ -809,8 +789,8 @@ NodeMenu = Class.create({
                 target._suggestPicker.clearAcceptedList();
                 if (values) {
                     values.each(function(v) {
-                        target._suggestPicker.addItem(v, v, '');
-                        _this._updateGeneColor(v, editor.getGeneLegend().getObjectColor(v));
+                        target._suggestPicker.addItem(v.id, v.value, '');
+                        _this._updateGeneColor(v.id, editor.getGeneLegend().getObjectColor(v.id));
                     })
                 }
                 target._silent = false;

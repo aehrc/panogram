@@ -1201,7 +1201,7 @@ DynamicPositionedGraph.prototype = {
 
         // note: everything else can be recomputed based on the information above
 
-        console.log("JSON represenation: " + JSON.stringify(output));
+//        console.log("JSON represenation: " + JSON.stringify(output));
         //timer.printSinceLast("=== to JSON: ");
 
         return JSON.stringify(output);

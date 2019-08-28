@@ -9,12 +9,60 @@ var GeneLegend = Class.create( Legend, {
 
     initialize: function($super) {
         $super('Candidate Genes', true);
+        
+        this._termCache = {};
     },
 
     _getPrefix: function(id) {
         return "gene";
     },
 
+    
+    /**
+     * Returns the GeneTerm object with the given ID. If object is not in cache yet
+     * returns a newly created one which may have the term name & other attributes not loaded yet
+     *
+     * @method getTerm
+     * @return {Object}
+     */    
+    getTerm: function(geneID) {
+    	geneID = GeneTerm.sanitizeID(geneID);
+        if (!this._termCache.hasOwnProperty(geneID)) {
+            var whenNameIsLoaded = function() { this._updateTermName(geneID); }
+            this._termCache[geneID] = new GeneTerm(geneID, null, whenNameIsLoaded.bind(this));            
+        }
+        return this._termCache[geneID];
+    },
+    
+    /**
+     * Updates the displayed gene name for the given gene
+     *
+     * @method _updateTermName
+     * @param {Number} id The identifier of the gene to update
+     * @private
+     */    
+    _updateTermName: function(id) {
+//        console.log("updating phenotype display for " + id + ", name = " + this.getTerm(id).getName());
+        var name = this._legendBox.down('li#' + this._getPrefix() + '-' + id + ' .disorder-name');
+        name.update(this.getTerm(id).getName());
+    },
+    
+    /**
+     * Registers an occurrence of a gene. If gene hasn't been documented yet,
+     * designates a color for it.
+     *
+     * @method addCase
+     * @param {Number|String} geneID ID for this gene taken from the HGNC database
+     * @param {String} geneName The name of the gene
+     * @param {Number} nodeID ID of the Person who has this disorder
+     */
+    addCase: function($super, geneID, geneName, nodeID) {
+        if (!this._termCache.hasOwnProperty(geneID))
+            this._termCache[geneID] = new GeneTerm(geneID, geneName);
+
+        $super(geneID, geneName, nodeID);
+    },
+    
     /**
      * Generate the element that will display information about the given disorder in the legend
      *

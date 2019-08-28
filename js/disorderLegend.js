@@ -6,7 +6,7 @@
  * @class DisorderLegend
  * @constructor
  */
-var DisorgerLegend = Class.create( Legend, {
+var DisorderLegend = Class.create( Legend, {
 
     initialize: function($super) {
         $super('Disorders', true);

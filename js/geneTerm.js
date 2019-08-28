@@ -1,20 +1,20 @@
 /*
- * HPOTerm is a class for storing phenotype information and loading it from the
- * the HPO database. These phenotypes can be attributed to an individual in the Pedigree.
+ * GeneTerm is a class for storing gene information and loading it from the
+ * the ontology server. These genes can be attributed to an individual in the Pedigree.
  *
- * @param hpoID the id number for the HPO term, taken from the HPO database
- * @param name a string representing the name of the term e.g. "Abnormality of the eye"
+ * @param geneID the id number for the gene term, taken from the gene database
+ * @param name a string representing the name of the term e.g. "AD5"
  */
 
-var HPOTerm = Class.create( {
+var GeneTerm = Class.create( {
 
-    initialize: function(hpoID, name, callWhenReady) {
+    initialize: function(geneID, name, callWhenReady) {
         // user-defined terms
-        if (name == null && !HPOTerm.isValidID(HPOTerm.desanitizeID(hpoID))) {
-            name = HPOTerm.desanitizeID(hpoID);
+        if (name == null && !GeneTerm.isValidID(GeneTerm.desanitizeID(geneID))) {
+            name = GeneTerm.desanitizeID(geneID);
         }
 
-        this._hpoID  = HPOTerm.sanitizeID(hpoID);
+        this._geneID  = GeneTerm.sanitizeID(geneID);
         this._name   = name ? name : "loading...";
 
         if (!name && callWhenReady)
@@ -22,10 +22,10 @@ var HPOTerm = Class.create( {
     },
 
     /*
-     * Returns the hpoID of the phenotype
+     * Returns the geneID of the phenotype
      */
     getID: function() {
-        return this._hpoID;
+        return this._geneID;
     },
 
     /*
@@ -36,7 +36,7 @@ var HPOTerm = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://purl.obolibrary.org/obo/hp.owl&code=' + HPOTerm.desanitizeID(this._hpoID);
+        var queryURL           = 'https://genomics.ontoserver.csiro.au/fhir/CodeSystem/$lookup?system=http://www.genenames.org&code=' + GeneTerm.desanitizeID(this._geneID);
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
@@ -60,18 +60,18 @@ var HPOTerm = Class.create( {
             		}
             	}
             }
-            console.log("LOADED HPO TERM: id = " + this._hpoID + ", name = " + this._name);
+            console.log("LOADED GENE TERM: id = " + this._geneID + ", name = " + this._name);
         } catch (err) {
-            console.log("[LOAD HPO TERM] Error: " +  err);
+            console.log("[LOAD GENE TERM] Error: " +  err);
         }
     },
     
     onDataFail : function(error) {
-    	console.log("Failed to load hpo term " + this._hpoID + " setting name to ID");
-    	this._name = HPOTerm.desanitizeID(this._hpoID);
+    	console.log("Failed to load gene term " + this._geneID + " setting name to ID");
+    	this._name = GeneTerm.desanitizeID(this._geneID);
     },
     getSystem : function(){
-    	return 'http://purl.obolibrary.org/obo/hp.owl';
+    	return 'http://www.genenames.org';
     }
 });
 
@@ -79,43 +79,35 @@ var HPOTerm = Class.create( {
  * IDs are used as part of HTML IDs in the Legend box, which breaks when IDs contain some non-alphanumeric symbols.
  * For that purpose these symbols in IDs are converted in memory (but not in the stored pedigree) to some underscores.
  */
-HPOTerm.sanitizeID = function(id) {
-	
+GeneTerm.sanitizeID = function(id) {
+	var start = "HGNC:";
     var temp = id;
-    var start = "http://";
     if (id.substring(0, start.length) === start){
-    	temp = "H_" + id.substring(start.length);
+    	temp = "D_" + id.substring(start.length);
     }
-    temp = temp.replace(/[\(\[]/g, '_L_');
+    var temp = temp.replace(/[\(\[]/g, '_L_');
     temp = temp.replace(/[\)\]]/g, '_J_');
     temp = temp.replace(/[:]/g, '_C_');
-    temp = temp.replace(/[.]/g, '_D_');
-    temp = temp.replace(/\//g, '_S_');
     return temp.replace(/[^a-zA-Z0-9,;_\-*]/g, '__');
 }
 
-HPOTerm.desanitizeID = function(id) {
-	var temp = id;
-    var start = "http://";
-    temp = temp.replace(/^H_/, start);
-    temp = temp.replace(/__/g, " ");
+GeneTerm.desanitizeID = function(id) {
+	var start = "HGNC:";
+	var temp = id.replace(/^D_/, start);
+    var temp = temp.replace(/__/g, " ");
     temp = temp.replace(/_C_/g, ":");
     temp = temp.replace(/_L_/g, "(");
     temp = temp.replace(/_J_/g, ")");
-    temp = temp.replace(/_D_/g, ".");
-    temp = temp.replace(/_S_/g, "/");
     return temp;
 }
 
-HPOTerm.isValidID = function(id) {
-    var pattern = /^(http:\/\/)|(HP:)/;
+GeneTerm.isValidID = function(id) {
+    var pattern = /^HGNC:/;
     return pattern.test(id);
 }
 
-HPOTerm.getServiceURL = function() {
+GeneTerm.getServiceURL = function() {
 	
-    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://purl.obolibrary.org/obo/hp.owl?vs&_format=json&count=20'
+    return 'https://genomics.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://www.genenames.org&_format=json&count=20'
 //    return 'http://playground.phenotips.org' + (new XWiki.Document('SolrService', 'PhenoTips').getURL("get") + "?");
 }
-
-

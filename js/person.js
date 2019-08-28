@@ -715,15 +715,30 @@ var Person = Class.create(AbstractPerson, {
         return this._ethnicities;
     },
 
+    
+    /**
+     * @method hasGene
+     * @param {Number} id Gene ID, taken from the HGNC database
+     */
+    hasGene: function(id) {
+        return (this.getGenes().indexOf(id) != -1);
+    },
+    
     /**
      * Adds gene to the list of this node's candidate genes
      *
      * @method addGenes
      */
     addGene: function(gene) {
-        if (this.getGenes().indexOf(gene) == -1) {
-            editor.getGeneLegend().addCase(gene, gene, this.getID());
-            this.getGenes().push(gene);
+    	if (typeof gene != 'object') {
+    		gene = editor.getGeneLegend().getTerm(gene);
+        }
+        if(!this.hasGene(gene.getID())) {
+            editor.getGeneLegend().addCase(gene.getID(), gene.getName(), this.getID());
+            this.getGenes().push(gene.getID());
+        }
+        else {
+            alert("This person already has the specified gene");
         }
     },
 
@@ -732,10 +747,13 @@ var Person = Class.create(AbstractPerson, {
      *
      * @method removeGene
      */
-    removeGene: function(gene) {
-        if (this.getGenes().indexOf(gene) !== -1) {
-            editor.getGeneLegend().removeCase(gene, this.getID());
-            this._candidateGenes = this.getGenes().without(gene);
+    removeGene: function(geneID) {
+        if(this.hasGene(geneID)) {
+            editor.getGeneLegend().removeCase(geneID, this.getID());
+            this._candidateGenes = this.getGenes().without(geneID);
+        }
+        else {
+            alert("This person doesn't have the specified gene");
         }
     },
 
@@ -765,6 +783,20 @@ var Person = Class.create(AbstractPerson, {
         return this._candidateGenes;
     },
 
+    /**
+     * Returns a list of disorders of this person, with non-scrambled IDs
+     *
+     * @method getGenesForExport
+     * @return {Array} List of human-readable versions of gene IDs
+     */
+    getGenesForExport: function() {
+        var exportGenes = this._candidateGenes.slice(0);
+        for (var i = 0; i < exportGenes.length; i++) {
+        	exportGenes[i] = GeneTerm.desanitizeID(exportGenes[i]);
+        }
+        return exportGenes;
+    },
+    
     /**
      * Removes the node and its visuals.
      *
@@ -840,6 +872,12 @@ var Person = Class.create(AbstractPerson, {
             hpoTerms.push({id: hpo, value: termName});
         });
 
+        var genes = [];
+        this.getGenes().forEach(function(gene) {
+            var termName = editor.getGeneLegend().getTerm(gene).getName();
+            genes.push({id: gene, value: termName});
+        });
+        
         var cantChangeAdopted = this.isFetus() || editor.getGraph().hasToBeAdopted(this.getID());
 
         var inactiveMonozygothic = true;
@@ -881,7 +919,7 @@ var Person = Class.create(AbstractPerson, {
             carrier:       {value : this.getCarrierStatus(), disabled: inactiveCarriers},
             disorders:     {value : disorders},
             ethnicity:     {value : this.getEthnicities()},
-            candidate_genes: {value : this.getGenes()},
+            candidate_genes: {value : genes},
             adopted:       {value : this.isAdopted(), inactive: cantChangeAdopted},
             state:         {value : this.getLifeStatus(), inactive: inactiveStates},
             date_of_death: {value : this.getDeathDate(), inactive: this.isFetus()},
@@ -940,7 +978,7 @@ var Person = Class.create(AbstractPerson, {
         if (this.getEthnicities().length > 0)
             info['ethnicities'] = this.getEthnicities();
         if (this.getGenes().length > 0)
-            info['candidateGenes'] = this.getGenes();
+            info['candidateGenes'] = this.getGenesForExport();
         if (this._twinGroup !== null)
             info['twinGroup'] = this._twinGroup;
         if (this._monozygotic)
