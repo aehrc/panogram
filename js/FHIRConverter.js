@@ -288,12 +288,26 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 	}
 	if (familyHistoryResource.condition) {
 		var disorders = [];
+		var disorderSystem = editor.getDisorderSystem();
 		for (var i = 0; i < familyHistoryResource.condition.length; i++) {
 			var condition = familyHistoryResource.condition[i].code;
 			if (condition && condition.coding) {
-				var firstCoding = condition.coding[0];
-				if (firstCoding.display) {
-					disorder.push(firstCoding.code);
+				var foundSystem = false;
+				for (var cIndex = 0; cIndex < condition.coding.length; cIndex++){
+					var coding = condition.coding[cIndex];
+					if (coding.system === disorderSystem){
+						disorders.push(coding.code);
+						foundSystem = true;
+						break;
+					}
+				}
+				if (!foundSystem){
+					var firstCoding = condition.coding[0];
+					if (firstCoding.display) {
+						disorders.push(firstCoding.code);
+						continue;
+					}					
+				} else {
 					continue;
 				}
 			}
@@ -370,13 +384,13 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 							var foundCode = false;
 							if (parentResource.sex.coding) {
 								var codings = parentResource.sex.coding;
-								for (var i = 0; i < codings.length; i++) {
-									if (codings[i].system === "http://hl7.org/fhir/administrative-gender") {
+								for (var c = 0; c < codings.length; c++) {
+									if (codings[c].system === "http://hl7.org/fhir/administrative-gender") {
 										foundCode = true;
-										if (codings[i].code === "male") {
+										if (codings[c].code === "male") {
 											type = "father";
 										}
-										if (codings[i].code === "female") {
+										if (codings[c].code === "female") {
 											type = "mother";
 										}
 										break;
@@ -409,17 +423,36 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 				if (observationResource) {
 					var clinical = "fmh_clinical";
 					var genes = "fmh_genes"
-					var isSympton = true;
+					var isSympton = false;
+					var isGene = false;
 					var value = null;
 					if (observationResource.id.substring(0, clinical.length) == clinical) {
+						isSympton = true;
+					} else if (observationResource.id.substring(0, genes.length) == genes) {
+						isGene = false;
+					}
+					if (observationResource.valueString){
 						value = observationResource.valueString;
-					} else if (observationResource.id
-							.substring(0, genes.length) == genes) {
-						value = observationResource.valueString;
-						isSympton = false;
-					} else {
-						// @TODO add code to work out sympton or gene
-						// not one of our hardcoded names, guess we need to try and decide based on the value
+					}
+					else if (observationResource.valueCodeableConcept){
+						if (observationResource.valueCodeableConcept.coding){
+							for (var cIndex = 0; cIndex < observationResource.valueCodeableConcept.coding.length; cIndex++){
+								var coding = observationResource.valueCodeableConcept.coding[cIndex];
+								if (coding.system === editor.getGeneSystem()){
+									isGene = true;
+									value = coding.code;
+									break;
+								}
+								if (coding.system === editor.getPhenotypeSystem()){
+									isSympton = true;
+									value = coding.code;
+									break;
+								}
+							}
+						}
+						if (value == null && observationResource.valueCodeableConcept.text){
+							value = observationResource.valueCodeableConcept.text;
+						}
 					}
 					if (value != null) {
 						if (isSympton) {
@@ -427,7 +460,7 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 								properties.hpoTerms = [];
 							}
 							properties.hpoTerms.push(value);
-						} else {
+						} else if (isGene) {
 							if (!properties.candidateGenes) {
 								properties.candidateGenes = [];
 							}
@@ -639,15 +672,23 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 		var observations = [];
 		if (nodeProperties['hpoTerms']) {
 			var hpoTerms = nodeProperties['hpoTerms'];
+			var hpoLegend = editor.getHPOLegend();
+			var hpoSystem = editor.getPhenotypeSystem();
 
-			for (var j = 0; j < hpoTerms.length; j++) {
-				// @TODO use the code if we have one.
+			for (var j = 0; j < hpoTerms.length; j++) {				
 				var fhirObservation = {
 					"resourceType" : "Observation",
 					"id" : "fmh_clinical_" + i + "_" + j,
 					"status" : "preliminary",
-					"valueString" : hpoTerms[j]
+					
 				};
+				var hpoTerm = hpoLegend.getTerm(hpoTerms[j]);
+				if (hpoTerm.getName() === hpoTerms[j]){
+					fhirObservation["valueString"] = hpoTerms[j]
+				}
+				else {
+					fhirObservation["valueCodeableConcept"] = { "coding" : [ { "system" : hpoSystem, "code" : hpoTerms[i], "display" : hpoTerm.getName() } ] };
+				}
 				if (i == 0) {
 					// we are talking about the patient
 					fhirObservation['subject'] = patientReference;
@@ -663,15 +704,22 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 
 		if (nodeProperties['candidateGenes']) {
 			var candidateGenes = nodeProperties['candidateGenes'];
-
+			var geneLegend = editor.getGeneLegend();
+			var geneSystem = editor.getGeneSystem();
 			for (var j = 0; j < candidateGenes.length; j++) {
 				// @TODO change to use http://build.fhir.org/ig/HL7/genomics-reporting/obs-region-studied.html
 				var fhirObservation = {
 					"resourceType" : "Observation",
 					"id" : "fmh_genes_" + i + "_" + j,
 					"status" : "preliminary",
-					"valueString" : candidateGenes[j]
 				};
+				var geneTerm = geneLegend.getTerm(candidateGenes[j]);
+				if (geneTerm.getName() === candidateGenes[j]){
+					fhirObservation["valueString"] = candidateGenes[j]
+				}
+				else {
+					fhirObservation["valueCodeableConcept"] = { "coding" : [ { "system" : geneSystem, "code" : candidateGenes[i], "display" : geneTerm.getName() } ] };
+				}
 				if (i == 0) {
 					// we are talking about the patient
 					fhirObservation['subject'] = patientReference;
@@ -2011,3 +2059,4 @@ FHIRConverter.buildFhirFMH = function(index, pedigree, privacySetting,
 };
 
 //===============================================================================================
+
