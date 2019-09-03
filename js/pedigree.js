@@ -13,16 +13,38 @@ var PedigreeEditor = Class.create({
         window.editor = this;
 
         this._readOnly = options.hasOwnProperty('readOnly') ? options.readOnly : this.isUnsupportedBrowser();
+                
+        var ontologyServer = options.hasOwnProperty('ontologyServer') ? options.ontologyServer : 'https://genomics.ontoserver.csiro.au/fhir/';
+        var ontologyExpandCount = options.hasOwnProperty('ontologyExpandCount') ? options.ontologyExpandCount : 20;
         
-        this._ontologyServer = options.hasOwnProperty('ontologyServer') ? options.ontologyServer : 'https://genomics.ontoserver.csiro.au/fhir/';
-        this._ontologyExpandCount = options.hasOwnProperty('ontologyExpandCount') ? options.ontologyExpandCount : 20;
-        this._ethnicityValueSetURL = options.hasOwnProperty('ethnicityValueSetURL') ? options.ethnicityValueSetURL : 'http://purl.obolibrary.org/obo/hancestro/category';
-        this._disorderValueSetURL = options.hasOwnProperty('disorderValueSetURL') ? options.disorderValueSetURL : 'http://www.omim.org';
-        this._disorderCodeSystem = options.hasOwnProperty('disorderCodeSystem') ? options.disorderCodeSystem : 'http://www.omim.org';
-        this._phenotypeValueSetURL = options.hasOwnProperty('phenotypeValueSetURL') ? options.phenotypeValueSetURL : 'http://purl.obolibrary.org/obo/hp.owl?vs';
-        this._phenotypeCodeSystem = options.hasOwnProperty('phenotypeCodeSystem') ? options.phenotypeCodeSystem : 'http://purl.obolibrary.org/obo/hp.owl';
-        this._geneValueSetURL = options.hasOwnProperty('geneValueSetURL') ? options.geneValueSetURL : 'http://www.genenames.org';
-        this._geneCodeSystem = options.hasOwnProperty('geneCodeSystem') ? options.geneCodeSystem : 'http://www.genenames.org';
+        if (!LookupManager.hasType('disorder)')){
+            var disorderValueSetURL = options.hasOwnProperty('disorderValueSetURL') ? options.disorderValueSetURL : 'http://www.omim.org';
+            var disorderCodeSystem = options.hasOwnProperty('disorderCodeSystem') ? options.disorderCodeSystem : 'http://www.omim.org';
+            var disorderCodeRegex = options.hasOwnProperty('disorderCodeRegex') ? options.disorderCodeRegex : /[0-9]+/;
+        	LookupManager.addLookup('disorder', new FhirLookup(ontologyServer,  disorderCodeSystem, disorderValueSetURL, disorderCodeRegex, ontologyExpandCount));	
+        }
+
+        if (!LookupManager.hasType('phenotype)')){
+            var phenotypeValueSetURL = options.hasOwnProperty('phenotypeValueSetURL') ? options.phenotypeValueSetURL : 'http://purl.obolibrary.org/obo/hp.owl?vs';
+            var phenotypeCodeSystem = options.hasOwnProperty('phenotypeCodeSystem') ? options.phenotypeCodeSystem : 'http://purl.obolibrary.org/obo/hp.owl';
+            var phenotypeCodeRegex = options.hasOwnProperty('phenotypeCodeRegex') ? options.phenotypeCodeRegex : /^(http:\/\/)|(HP:)/;
+            LookupManager.addLookup('phenotype', new FhirLookup(ontologyServer,  phenotypeCodeSystem, phenotypeValueSetURL, phenotypeCodeRegex, ontologyExpandCount));
+        }
+
+        if (!LookupManager.hasType('gene)')){
+            var geneValueSetURL = options.hasOwnProperty('geneValueSetURL') ? options.geneValueSetURL : 'http://www.genenames.org';
+            var geneCodeSystem = options.hasOwnProperty('geneCodeSystem') ? options.geneCodeSystem : 'http://www.genenames.org';
+            var geneCodeRegex = options.hasOwnProperty('geneCodeRegex') ? options.geneCodeRegex : /^HGNC:/;
+            LookupManager.addLookup('gene', new FhirLookup(ontologyServer,  geneCodeSystem, geneValueSetURL, geneCodeRegex, ontologyExpandCount));
+        }
+
+        if (!LookupManager.hasType('ethnicity)')){
+            var ethnicityValueSetURL = options.hasOwnProperty('ethnicityValueSetURL') ? options.ethnicityValueSetURL : 'http://purl.obolibrary.org/obo/hancestro/category';
+            LookupManager.addLookup('ethnicity', new FhirLookup(ontologyServer,  ethnicityValueSetURL, ethnicityValueSetURL, null, ontologyExpandCount));
+        }
+        
+        
+        
         // initialize main data structure which holds the graph structure
         this._graphModel = DynamicPositionedGraph.makeEmpty(PedigreeEditor.attributes.layoutRelativePersonWidth, PedigreeEditor.attributes.layoutRelativeOtherWidth);
 
@@ -49,12 +71,12 @@ var PedigreeEditor = Class.create({
         this._saveLoadEngine = options.hasOwnProperty('saveLoadEngine') ? options.saveLoadEngine : new SaveLoadEngine();
         this._probandData = options.hasOwnProperty('probandData') ? options.probandData : new ProbandDataLoader();
         
-
+        this._controller = new Controller();
 
         // load proband data and load the graph after proband data is available
         this._probandData.load( this._saveLoadEngine.load.bind(this._saveLoadEngine) );
 
-        this._controller = new Controller();
+        
 
         //attach actions to buttons on the top bar
         var undoButton = $('action-undo');
@@ -680,45 +702,6 @@ var PedigreeEditor = Class.create({
         ], [], "relationship-menu");
     },
 
-    getEthnicityExpandUrl : function () {
-    	return this._ontologyServer + 'ValueSet/$expand?_format=json&url=' + this._ethnicityValueSetURL + "&count=" + this._ontologyExpandCount;
-    },
-    
-    getDisorderExpandUrl : function () {
-    	return this._ontologyServer + 'ValueSet/$expand?_format=json&url=' + this._disorderValueSetURL + "&count=" + this._ontologyExpandCount;
-    },
-    
-    getPhenotypeExpandUrl : function () {
-    	return this._ontologyServer + 'ValueSet/$expand?_format=json&url=' + this._phenotypeValueSetURL + "&count=" + this._ontologyExpandCount;
-    },
-
-    getGeneExpandUrl : function () {
-    	return this._ontologyServer + 'ValueSet/$expand?_format=json&url=' + this._geneValueSetURL + "&count=" + this._ontologyExpandCount;
-    },
-    
-    getDisorderLookupUrl : function () {
-    	return this._ontologyServer + 'CodeSystem/$lookup?_format=json&system=' + this._disorderCodeSystem;
-    },
-    
-    getPhenotypeLookupUrl : function () {
-    	return this._ontologyServer + 'CodeSystem/$lookup?_format=json&system=' + this._phenotypeCodeSystem;
-    },
-
-    getGeneLookupUrl : function () {
-    	return this._ontologyServer + 'CodeSystem/$lookup?_format=json&system=' + this._geneCodeSystem;
-    },
-    
-    getDisorderSystem : function () {
-    	return this._disorderCodeSystem;
-    },
-    
-    getPhenotypeSystem : function () {
-    	return this._phenotypeCodeSystem;
-    },
-
-    getGeneSystem : function () {
-    	return this._geneCodeSystem;
-    },
     
     /**
      * @method getPartnershipMenu

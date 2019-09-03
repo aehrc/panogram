@@ -19,8 +19,8 @@
 	<script type="text/javascript">
         // <![CDATA[
         	var editorWindow = null;
-    		var editorPage = "https://aehrc.github.io/panogram/messageEditor.html";
-    		var editorPageOrigin = "https://aehrc.github.io";
+    		var editorPage = "http://localhost:8990/messageEditor.html";
+    		var editorPageOrigin = "http://localhost:8990";
     		var windowName = "panagram";
     		var sendWhenReady = false;
         	
@@ -55,7 +55,6 @@
         	
         	function openEditor(element){
         		console.log("Opening panogram editor in a new window");
-        		
         		var firstChar = '?';
         		var pageToOpen = editorPage;
         		var ontologyServer = $("#ontologyServer").val();
@@ -69,7 +68,6 @@
         		}
         		
         		sendWhenReady = true;
-        			
         		editorWindow = window.open(pageToOpen, windowName);
         	}
         	
@@ -91,8 +89,8 @@
     <input type="text" class="form-control" id="context" aria-describedby="contextHelp" placeholder="Enter context">
     <small id="contextHelp" class="form-text text-muted">The context is sent to panogram and then returned with saved diagram data.</small>
   </div>
-  <div class="form-group">
-    <label for="ontologyServer">Ontology Server</label>
+    <div class="form-group">
+    <label for="context">Ontology Server</label>
     <input type="text" class="form-control" id="ontologyServer" aria-describedby="contextHelp" placeholder="Enter Server of leave blank for default">
     <small id="contextHelp" class="form-text text-muted">The ontology server used to lookup disorders and phenotypes</small>
   </div>

@@ -695,6 +695,7 @@ var View = Class.create({
 
         } catch(err) {
             console.log("[view] update error: " + err);
+            console.log(err.stack);
         }
     }
 });

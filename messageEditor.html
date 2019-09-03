@@ -98,9 +98,9 @@
     <script type="text/javascript" src="js/personGroupHoverbox.js" defer="defer"></script>
     <script type="text/javascript" src="js/lineSet.js" defer="defer"></script>
     <script type="text/javascript" src="js/workspace.js" defer="defer"></script>
-    <script type="text/javascript" src="js/disorder.js" defer="defer"></script>
-    <script type="text/javascript" src="js/hpoTerm.js" defer="defer"></script>
-    <script type="text/javascript" src="js/geneTerm.js" defer="defer"></script>
+    <script type="text/javascript" src="js/LookupManager.js" defer="defer"></script>
+    <script type="text/javascript" src="js/LookupTerm.js" defer="defer"></script>
+    
     <script type="text/javascript" src="js/versionUpdater.js" defer="defer"></script>
     <script type="text/javascript" src="js/saveLoadEngine.js" defer="defer"></script>
     <script type="text/javascript" src="js/localStorageSaveLoadEngine.js" defer="defer"></script>
@@ -124,6 +124,15 @@
             $.noConflict();
             return $;
         });
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
 
         XWiki.webapppath = "";
         XWiki.servletpath = "bin/";
@@ -153,6 +162,19 @@
                     saveLoadEngine: new MessageStorageSaveLoadEngine("TEST_LOCAL_STORAGE_DATA", "FHIRJSON", true),
 		            probandData: new MessageStorageProbandDataLoader("TEST_LOCAL_STORAGE_PROBAND"),
             };
+            var ontologyServer = getParameterByName('ontologyServer');
+            if (ontologyServer){
+            	editorOptions.ontologyServer = ontologyServer;
+            }
+            var mode = getParameterByName('mode');
+            if (mode === 'SCT'){
+            	editorOptions.disorderValueSetURL = 'http://snomed.info/sct?fhir_vs=refset/32570581000036105';
+            	editorOptions.disorderCodeSystem = 'http://snomed.info/sct';
+            	editorOptions.disorderCodeRegex = /[0-9]+/;
+            	editorOptions.phenotypeValueSetURL = 'http://ga4gh.org/fhir/ValueSet/phenotype';
+            	editorOptions.phenotypeCodeSystem = 'http://snomed.info/sct';
+            	editorOptions.phenotypeCodeRegex = /[0-9]+/;
+            }
             console.log("creating editor");
             editor = new PedigreeEditor(editorOptions);
             var messageStorageController = new MessageStorageController();

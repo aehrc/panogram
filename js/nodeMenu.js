@@ -107,21 +107,7 @@ NodeMenu = Class.create({
         this.form.select('input.suggest-omim').each(function(item) {
             if (!item.hasClassName('initialized')) {
                 // Create the Suggest.
-                item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: editor.getDisorderExpandUrl() + "&",
-                    varname: "filter",
-                    noresults: "No matching terms",
-                    json: true,
-                    resultsParameter : "expansion.contains",
-                    resultId : "code",
-                    resultValue : "display",
-                    resultInfo : {},
-                    enableHierarchy: false,
-                    fadeOnClear : false,
-                    timeout : 30000,
-                    tooltip: 'omim-disease-info',
-                    parentContainer : $('body')
-                });
+                item._suggest = new PhenoTips.widgets.Suggest(item, LookupManager.getSuggestOptions('disorder'));
                 if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
                     item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
                         'showKey' : false,
@@ -148,23 +134,8 @@ NodeMenu = Class.create({
         	//https://ontoserver.csiro.au/shrimp/?concept=Thing&system=http://purl.obolibrary.org/obo/hancestro/hancestro.owl&versionId=http://purl.obolibrary.org/obo/hancestro/releases/2018-11-23/hancestro.owl&fhir=https://genomics.ontoserver.csiro.au/fhir
         	
             if (!item.hasClassName('initialized')) {
-//                var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
-                //console.log("Ethnicity URL: " + ethnicityServiceURL);
             	
-                item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: editor.getEthnicityExpandUrl() + "&",
-                    varname: "filter",
-                    noresults: "No matching terms",
-                    resultsParameter : "expansion.contains",
-                    json: true,
-                    resultId : "code",
-                    resultValue : "display",
-                    resultInfo : {},
-                    enableHierarchy: false,
-                    fadeOnClear : false,
-                    timeout : 30000,
-                    parentContainer : $('body')
-                });
+                item._suggest = new PhenoTips.widgets.Suggest(item, LookupManager.getSuggestOptions('ethnicity'));
                 if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
                     item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
                         'showKey' : false,
@@ -189,26 +160,7 @@ NodeMenu = Class.create({
         // genes
         this.form.select('input.suggest-genes').each(function(item) {
             if (!item.hasClassName('initialized')) {
-                //var geneServiceURL = 'http://playground.phenotips.org' + (new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain"))
-            	
-               	
-
-                //console.log("GeneService URL: " + geneServiceURL);
-                item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: editor.getGeneExpandUrl() + "&",
-                    varname: "filter",
-                    noresults: "No matching terms",
-                    resultsParameter : "expansion.contains",
-                    json: true,
-                    resultId : "code",
-                    resultValue : "display",
-                    resultInfo : {},
-                    enableHierarchy: false,
-                    tooltip : 'gene-info',
-                    fadeOnClear : false,
-                    timeout : 30000,
-                    parentContainer : $('body')
-                });
+                item._suggest = new PhenoTips.widgets.Suggest(item, LookupManager.getSuggestOptions('gene'));
                 if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
                     item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
                         'showKey' : false,
@@ -235,24 +187,7 @@ NodeMenu = Class.create({
             if (!item.hasClassName('initialized')) {
                 
                 //console.log("HPO\SOLR URL: " + solrServiceURL);
-                item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: editor.getPhenotypeExpandUrl() + "&",
-                    varname: "filter",
-                    noresults: "No matching terms",
-                    json: true,
-                    resultsParameter : "expansion.contains",
-                    resultId : "code",
-                    resultValue : "display",
-                    resultAltName: "synonym",
-                    resultCategory : "term_category",
-                    resultInfo : {},
-                    enableHierarchy: false,
-                    resultParent : "is_a",
-                    tooltip: 'phenotype-info',
-                    fadeOnClear : false,
-                    timeout : 30000,
-                    parentContainer : $('body')
-                });
+                item._suggest = new PhenoTips.widgets.Suggest(item, LookupManager.getSuggestOptions('phenotype'));
                 if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
                     item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
                         'showKey' : false,

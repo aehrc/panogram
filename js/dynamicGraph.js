@@ -1091,8 +1091,16 @@ DynamicPositionedGraph.prototype = {
         var removedNodes = this._getAllNodes(1);  // all nodes from 1 and up
 
         var emptyGraph = (this.DG.GG.getNumVertices() == 0);
-                
-        var node0properties = emptyGraph ? {} : this.getProperties(0);
+
+        
+        var node0properties = {};
+        
+    	var probandData = editor.getProbandDataFromPhenotips();
+        if (probandData){
+        	node0properties.fName = probandData.firstName;
+        	node0properties.lName = probandData.lastName;
+        	node0properties.gender = probandData.gender;
+        }
 
         // it is easier to create abrand new graph transferirng node 0 propertie sthna to remove on-by-one
         // each time updating ranks, orders, etc

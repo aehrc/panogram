@@ -288,7 +288,7 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 	}
 	if (familyHistoryResource.condition) {
 		var disorders = [];
-		var disorderSystem = editor.getDisorderSystem();
+		var disorderSystem = LookupManager.getCodeSystem('disorder');//editor.getDisorderSystem();
 		for (var i = 0; i < familyHistoryResource.condition.length; i++) {
 			var condition = familyHistoryResource.condition[i].code;
 			if (condition && condition.coding) {
@@ -426,6 +426,8 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 					var isSympton = false;
 					var isGene = false;
 					var value = null;
+					var hpoSystem = LookupManager.getCodeSystem('phenotype');
+					var geneSystem = LookupManager.getCodeSystem('gene');
 					if (observationResource.id.substring(0, clinical.length) == clinical) {
 						isSympton = true;
 					} else if (observationResource.id.substring(0, genes.length) == genes) {
@@ -438,12 +440,12 @@ FHIRConverter.extractDataFromFMH = function(familyHistoryResource,
 						if (observationResource.valueCodeableConcept.coding){
 							for (var cIndex = 0; cIndex < observationResource.valueCodeableConcept.coding.length; cIndex++){
 								var coding = observationResource.valueCodeableConcept.coding[cIndex];
-								if (coding.system === editor.getGeneSystem()){
+								if (coding.system === geneSystem){
 									isGene = true;
 									value = coding.code;
 									break;
 								}
-								if (coding.system === editor.getPhenotypeSystem()){
+								if (coding.system === hpoSystem){
 									isSympton = true;
 									value = coding.code;
 									break;
@@ -603,7 +605,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 	if (pedigree.GG.properties[0]['disorders']) {
 		var disorders = pedigree.GG.properties[0]['disorders'];
 		var disorderLegend = editor.getDisorderLegend();
-		var disorderSystem = editor.getDisorderSystem();
+		var disorderSystem = LookupManager.getCodeSystem('disorder');//editor.getDisorderSystem();
 		
 		for (var i = 0; i < disorders.length; i++) {
 			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
@@ -673,7 +675,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 		if (nodeProperties['hpoTerms']) {
 			var hpoTerms = nodeProperties['hpoTerms'];
 			var hpoLegend = editor.getHPOLegend();
-			var hpoSystem = editor.getPhenotypeSystem();
+			var hpoSystem =  LookupManager.getCodeSystem('phenotype');
 
 			for (var j = 0; j < hpoTerms.length; j++) {				
 				var fhirObservation = {
@@ -705,7 +707,7 @@ FHIRConverter.exportAsFHIR = function(pedigree, privacySetting, fhirPatientRefer
 		if (nodeProperties['candidateGenes']) {
 			var candidateGenes = nodeProperties['candidateGenes'];
 			var geneLegend = editor.getGeneLegend();
-			var geneSystem = editor.getGeneSystem();
+			var geneSystem = LookupManager.getCodeSystem('gene');
 			for (var j = 0; j < candidateGenes.length; j++) {
 				// @TODO change to use http://build.fhir.org/ig/HL7/genomics-reporting/obs-region-studied.html
 				var fhirObservation = {
@@ -2027,7 +2029,7 @@ FHIRConverter.buildFhirFMH = function(index, pedigree, privacySetting,
 		var disorders = nodeProperties['disorders'];
 		var conditions = [];
 		var disorderLegend = editor.getDisorderLegend();
-		var disorderSystem = editor.getDisorderSystem();
+		var disorderSystem = LookupManager.getCodeSystem('disorder');//editor.getDisorderSystem();
 			
 		for (var i = 0; i < disorders.length; i++) {
 			var disorderTerm = disorderLegend.getDisorder(disorders[i]);
